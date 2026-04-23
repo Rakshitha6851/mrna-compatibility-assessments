@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --primary: #4F90D4;
+    --secondary: #8B7EC9;
+    --accent: #00D9FF;
+    --bg: linear-gradient(135deg, #0A1628, #1a1a3e, #0d1f3c);
+    --card: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.12);
+    --text: #ffffff;
+    --muted: #A0AEC0;
+}
+
+body {
+    margin:0;
+    font-family:'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 30px;
+}
+
+/* HEADER */
+.header {
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-bottom: 30px;
+}
+
+.title {
+    font-family:'Outfit';
+    font-size: 28px;
+    background: linear-gradient(135deg,#fff,#00D9FF,#8B7EC9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* CARDS */
+.cards {
+    display:flex;
+    gap:20px;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: var(--card);
+    border:1px solid var(--border);
+    padding:20px;
+    border-radius:16px;
+    width:180px;
+    backdrop-filter: blur(15px);
+}
+
+.card h3 {
+    font-size:14px;
+    color: var(--muted);
+}
+
+.card p {
+    font-size:24px;
+    margin-top:10px;
+}
+
+/* BUTTON */
+.btn {
+    background: linear-gradient(135deg,#4F90D4,#8B7EC9);
+    border:none;
+    padding:10px 16px;
+    border-radius:10px;
+    color:white;
+    cursor:pointer;
+}
+
+/* TABLE */
+.table-container {
+    margin-top:30px;
+    background: var(--card);
+    padding:20px;
+    border-radius:16px;
+    border:1px solid var(--border);
+}
+
+table {
+    width:100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding:10px;
+    text-align:left;
+}
+
+th {
+    color: var(--muted);
+}
+
+tr {
+    border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+/* CHART */
+.chart-box {
+    margin-top:30px;
+    background: var(--card);
+    padding:20px;
+    border-radius:16px;
+    border:1px solid var(--border);
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="title">Doctor Dashboard</div>
+    <button class="btn" onclick="addPatient()">+ Add Patient</button>
+</div>
+
+<!-- SUMMARY -->
+<div class="cards">
+    <div class="card">
+        <h3>Total Patients</h3>
+        <p id="total">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Low Risk</h3>
+        <p id="low">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Moderate Risk</h3>
+        <p id="moderate">0</p>
+    </div>
+
+    <div class="card">
+        <h3>High Risk</h3>
+        <p id="high">0</p>
+    </div>
+</div>
+
+<!-- TABLE -->
+<div class="table-container">
+    <h2>Recent Analyses</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Risk</th>
+            </tr>
+        </thead>
+        <tbody id="table"></tbody>
+    </table>
+</div>
+
+<!-- CHART -->
+<div class="chart-box">
+    <h2>Risk Distribution</h2>
+    <canvas id="chart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// TEMP DATA (later from backend)
+let patients = [
+    {name:"John", age:45, risk:"High"},
+    {name:"Anita", age:30, risk:"Low"},
+    {name:"Rahul", age:55, risk:"Moderate"}
+];
+
+function load(){
+    let low=0, mod=0, high=0;
+
+    document.getElementById('total').innerText = patients.length;
+
+    patients.forEach(p=>{
+        if(p.risk==="Low") low++;
+        else if(p.risk==="Moderate") mod++;
+        else high++;
+    });
+
+    document.getElementById('low').innerText = low;
+    document.getElementById('moderate').innerText = mod;
+    document.getElementById('high').innerText = high;
+
+    const table = document.getElementById('table');
+    table.innerHTML="";
+
+    patients.forEach(p=>{
+        table.innerHTML += `
+        <tr>
+            <td>${p.name}</td>
+            <td>${p.age}</td>
+            <td>${p.risk}</td>
+        </tr>`;
+    });
+
+    new Chart(document.getElementById('chart'), {
+        type:'pie',
+        data:{
+            labels:['Low','Moderate','High'],
+            datasets:[{
+                data:[low,mod,high]
+            }]
+        }
+    });
+}
+
+function addPatient(){
+    alert("Next step: Add Patient Page");
+}
+
+load();
+</script>
+
+</body>
+</html>
