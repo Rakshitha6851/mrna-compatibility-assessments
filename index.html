@@ -1336,49 +1336,75 @@
             passwordError.classList.remove('show');
         });
 
-        // Form Submission - Real Authentication
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    let email = emailInput.value.trim().toLowerCase();
-    const password = passwordInput.value;
-
-    loginBtn.classList.add('loading');
-    loginBtn.disabled = true;
-
-    try {
-        const res = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        loginBtn.classList.remove('loading');
-        loginBtn.disabled = false;
-
-        if (res.ok) {
-            successMessage.querySelector('p').textContent = `Welcome back, ${data.name}!`;
-            successMessage.classList.add('show');
-
-            setTimeout(() => {
-                window.location.href = "/dashboard";
-            }, 1000);
-        } else {
+        // Form Submission - Backend Authentication
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
             const authError = document.getElementById('authError');
-            authError.style.display = 'block';
-            authError.innerText = data.message || 'Login failed';
-            authError.style.color = '#FF6B6B';
-        }
-
-    } catch (err) {
-        console.error(err);
-        const authError = document.getElementById('authError');
-        authError.style.display = 'block';
-        authError.innerText = 'Server error. Please try again.';
-    }
-});
+            authError.style.display = 'none';
+            
+            let isValid = true;
+            
+            // Validate email
+            if (!validateEmail(emailInput.value)) {
+                emailInput.classList.add('error');
+                emailError.classList.add('show');
+                isValid = false;
+            }
+            
+            // Validate password
+            if (passwordInput.value.length < 6) {
+                passwordInput.classList.add('error');
+                passwordError.classList.add('show');
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Show loading state
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+            
+            // Save remember me preference
+            if (rememberMe.checked) {
+                localStorage.setItem('rememberMe', 'true');
+                localStorage.setItem('savedEmail', emailInput.value);
+            } else {
+                localStorage.setItem('rememberMe', 'false');
+                localStorage.removeItem('savedEmail');
+            }
+            
+            try {
+                const res = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: emailInput.value.toLowerCase().trim(),
+                        password: passwordInput.value
+                    })
+                });
+                
+                const data = await res.json();
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+                
+                if (res.ok) {
+                    successMessage.querySelector('p').textContent = `Logged in as ${data.name}! Redirecting...`;
+                    successMessage.classList.add('show');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1200);
+                } else {
+                    authError.querySelector('p').textContent = data.message || 'Invalid credentials';
+                    authError.style.display = 'block';
+                }
+            } catch (err) {
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+                authError.querySelector('p').textContent = 'Network error. Please try again.';
+                authError.style.display = 'block';
+            }
+        });
 
 
         // Enter key submission
@@ -1411,8 +1437,8 @@ loginForm.addEventListener('submit', async (e) => {
             signupSuccessMessage.classList.remove('show');
         });
 
-        // Sign Up Form Submission - Real Signup
-        signupForm.addEventListener('submit', (e) => {
+        // Sign Up Form Submission - Backend Signup
+        signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const signupName = document.getElementById('signupName');
@@ -1473,27 +1499,23 @@ loginForm.addEventListener('submit', async (e) => {
             signupSubmitBtn.classList.add('loading');
             signupSubmitBtn.disabled = true;
             
-            // Real signup
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const existingUser = users.find(u => u.email === signupEmail.value);
-            
-            setTimeout(() => {
+            try {
+                const res = await fetch('/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: signupName.value.trim(),
+                        email: signupEmail.value.toLowerCase().trim(),
+                        password: signupPassword.value
+                    })
+                });
+                
+                const data = await res.json();
                 signupSubmitBtn.classList.remove('loading');
                 signupSubmitBtn.disabled = false;
                 
-                if (existingUser) {
-                    signupEmailError.textContent = 'Email already registered';
-                    signupEmail.classList.add('error');
-                    signupEmailError.classList.add('show');
-                } else {
-                    const newUser = {
-                        name: signupName.value.trim(),
-                        email: signupEmail.value,
-                        password: signupPassword.value
-                    };
-                    users.push(newUser);
-                    localStorage.setItem('users', JSON.stringify(users));
-                    signupSuccessMessage.querySelector('p').textContent = `Account created for ${newUser.name}!`;
+                if (res.ok) {
+                    signupSuccessMessage.querySelector('p').textContent = `Account created for ${signupName.value.trim()}!`;
                     signupSuccessMessage.classList.add('show');
                     
                     setTimeout(() => {
@@ -1502,10 +1524,18 @@ loginForm.addEventListener('submit', async (e) => {
                         signupForm.reset();
                         signupSuccessMessage.classList.remove('show');
                     }, 2000);
-                    
-                    console.log('Account created:', newUser);
+                } else {
+                    signupEmailError.textContent = data.message || 'Signup failed';
+                    signupEmail.classList.add('error');
+                    signupEmailError.classList.add('show');
                 }
-            }, 1500);
+            } catch (err) {
+                signupSubmitBtn.classList.remove('loading');
+                signupSubmitBtn.disabled = false;
+                signupEmailError.textContent = 'Network error. Please try again.';
+                signupEmail.classList.add('error');
+                signupEmailError.classList.add('show');
+            }
         });
     </script>
 
