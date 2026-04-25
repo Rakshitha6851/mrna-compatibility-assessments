@@ -1,226 +1,518 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard</title>
-
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
-
-<style>
-:root {
-    --primary: #4F90D4;
-    --secondary: #8B7EC9;
-    --accent: #00D9FF;
-    --bg: linear-gradient(135deg, #0A1628, #1a1a3e, #0d1f3c);
-    --card: rgba(255,255,255,0.08);
-    --border: rgba(255,255,255,0.12);
-    --text: #ffffff;
-    --muted: #A0AEC0;
-}
-
-body {
-    margin:0;
-    font-family:'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 30px;
-}
-
-/* HEADER */
-.header {
-    display:flex;
-    justify-content: space-between;
-    align-items:center;
-    margin-bottom: 30px;
-}
-
-.title {
-    font-family:'Outfit';
-    font-size: 28px;
-    background: linear-gradient(135deg,#fff,#00D9FF,#8B7EC9);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* CARDS */
-.cards {
-    display:flex;
-    gap:20px;
-    flex-wrap: wrap;
-}
-
-.card {
-    background: var(--card);
-    border:1px solid var(--border);
-    padding:20px;
-    border-radius:16px;
-    width:180px;
-    backdrop-filter: blur(15px);
-}
-
-.card h3 {
-    font-size:14px;
-    color: var(--muted);
-}
-
-.card p {
-    font-size:24px;
-    margin-top:10px;
-}
-
-/* BUTTON */
-.btn {
-    background: linear-gradient(135deg,#4F90D4,#8B7EC9);
-    border:none;
-    padding:10px 16px;
-    border-radius:10px;
-    color:white;
-    cursor:pointer;
-}
-
-/* TABLE */
-.table-container {
-    margin-top:30px;
-    background: var(--card);
-    padding:20px;
-    border-radius:16px;
-    border:1px solid var(--border);
-}
-
-table {
-    width:100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding:10px;
-    text-align:left;
-}
-
-th {
-    color: var(--muted);
-}
-
-tr {
-    border-bottom:1px solid rgba(255,255,255,0.1);
-}
-
-/* CHART */
-.chart-box {
-    margin-top:30px;
-    background: var(--card);
-    padding:20px;
-    border-radius:16px;
-    border:1px solid var(--border);
-}
-</style>
-</head>
-
-<body>
-
-<div class="header">
-    <div class="title">Doctor Dashboard</div>
-    <button class="btn" onclick="addPatient()">+ Add Patient</button>
-</div>
-
-<!-- SUMMARY -->
-<div class="cards">
-    <div class="card">
-        <h3>Total Patients</h3>
-        <p id="total">0</p>
-    </div>
-
-    <div class="card">
-        <h3>Low Risk</h3>
-        <p id="low">0</p>
-    </div>
-
-    <div class="card">
-        <h3>Moderate Risk</h3>
-        <p id="moderate">0</p>
-    </div>
-
-    <div class="card">
-        <h3>High Risk</h3>
-        <p id="high">0</p>
-    </div>
-</div>
-
-<!-- TABLE -->
-<div class="table-container">
-    <h2>Recent Analyses</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Risk</th>
-            </tr>
-        </thead>
-        <tbody id="table"></tbody>
-    </table>
-</div>
-
-<!-- CHART -->
-<div class="chart-box">
-    <h2>Risk Distribution</h2>
-    <canvas id="chart"></canvas>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-// TEMP DATA (later from backend)
-let patients = [
-    {name:"John", age:45, risk:"High"},
-    {name:"Anita", age:30, risk:"Low"},
-    {name:"Rahul", age:55, risk:"Moderate"}
-];
-
-function load(){
-    let low=0, mod=0, high=0;
-
-    document.getElementById('total').innerText = patients.length;
-
-    patients.forEach(p=>{
-        if(p.risk==="Low") low++;
-        else if(p.risk==="Moderate") mod++;
-        else high++;
-    });
-
-    document.getElementById('low').innerText = low;
-    document.getElementById('moderate').innerText = mod;
-    document.getElementById('high').innerText = high;
-
-    const table = document.getElementById('table');
-    table.innerHTML="";
-
-    patients.forEach(p=>{
-        table.innerHTML += `
-        <tr>
-            <td>${p.name}</td>
-            <td>${p.age}</td>
-            <td>${p.risk}</td>
-        </tr>`;
-    });
-
-    new Chart(document.getElementById('chart'), {
-        type:'pie',
-        data:{
-            labels:['Low','Moderate','High'],
-            datasets:[{
-                data:[low,mod,high]
-            }]
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Digital Twin System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F90D4;
+            --secondary: #8B7EC9;
+            --accent: #00D9FF;
+            --accent-purple: #B87CD6;
+            --bg-base: #0A0E1A;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0AEC0;
+            --text-muted: #718096;
+            --input-bg: rgba(255, 255, 255, 0.06);
+            --input-border: rgba(255, 255, 255, 0.12);
+            --gradient-main: linear-gradient(135deg, #0A1628 0%, #1a1a3e 50%, #0d1f3c 100%);
+            --gradient-glow: linear-gradient(135deg, #00D9FF 0%, #8B7EC9 50%, #4F90D4 100%);
+            --button-gradient: linear-gradient(135deg, #4F90D4 0%, #8B7EC9 100%);
+            --button-hover: linear-gradient(135deg, #00D9FF 0%, #8B7EC9 100%);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            --glow: 0 0 40px rgba(0, 217, 255, 0.15);
         }
-    });
-}
 
-function addPatient(){
-    alert("Next step: Add Patient Page");
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-load();
-</script>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--gradient-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            color: var(--text-primary);
+        }
 
+        /* Animated Background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1-main {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #4F90D4 0%, #8B7EC9 100%);
+            top: -150px;
+            left: -100px;
+        }
+
+        .orb-2-main {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #8B7EC9 0%, #00D9FF 100%);
+            bottom: -100px;
+            right: -100px;
+            animation-delay: -7s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(20px, 30px) scale(1.02); }
+        }
+
+        /* DNA Elements */
+        .dna-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .dna-strand {
+            position: absolute;
+            opacity: 0.12;
+        }
+
+        .dna-strand svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .dna-main-1 { width: 50px; height: 160px; top: 15%; left: 5%; animation: dnaFloat 12s ease-in-out infinite; }
+        .dna-main-2 { width: 60px; height: 180px; bottom: 10%; right: 8%; animation: dnaFloat 15s ease-in-out infinite reverse; }
+
+        @keyframes dnaFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
+            50% { transform: translateY(-20px) rotate(5deg); opacity: 0.2; }
+        }
+
+        /* Nanoparticles */
+        .nanoparticle {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--gradient-glow);
+            opacity: 0.15;
+            animation: particleFloat 16s ease-in-out infinite;
+        }
+
+        .np-1 { width: 16px; height: 16px; top: 20%; left: 15%; }
+        .np-2 { width: 10px; height: 10px; top: 70%; left: 25%; animation-delay: -4s; }
+        .np-3 { width: 14px; height: 14px; top: 30%; right: 20%; animation-delay: -8s; }
+        .np-4 { width: 8px; height: 8px; bottom: 25%; right: 30%; animation-delay: -12s; }
+        .np-5 { width: 12px; height: 12px; top: 50%; left: 8%; animation-delay: -6s; }
+
+        @keyframes particleFloat {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(10px, -15px); }
+            50% { transform: translate(-5px, 10px); }
+            75% { transform: translate(15px, 5px); }
+        }
+
+        /* Layout */
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 40px;
+            background: rgba(10, 14, 26, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--input-border);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-glow);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.2);
+        }
+
+        .nav-logo svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+        }
+
+        .nav-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .logout-btn {
+            padding: 10px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            color: white;
+            background: var(--button-gradient);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 217, 255, 0.25);
+        }
+
+        .logout-btn:hover {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .welcome-section {
+            margin-bottom: 40px;
+        }
+
+        .welcome-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(24px, 4vw, 36px);
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #00D9FF 50%, #8B7EC9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        /* Reuse login-card style for dashboard cards */
+        .dashboard-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--input-border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: var(--shadow), var(--glow);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 0 50px rgba(0, 217, 255, 0.2);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-glow);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.2);
+        }
+
+        .card-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .card-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .card-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            color: white;
+            background: var(--button-gradient);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 217, 255, 0.25);
+        }
+
+        .card-btn:hover {
+            background: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.4);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .footer-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            opacity: 0.8;
+        }
+
+        .footer-separator {
+            margin: 0 8px;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .navbar {
+                padding: 16px 20px;
+            }
+            .main-content {
+                padding: 24px;
+            }
+            .welcome-title {
+                font-size: 22px;
+            }
+            .dna-strand {
+                display: none;
+            }
+            .nanoparticle {
+                opacity: 0.1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="bg-gradient-orb orb-1-main"></div>
+        <div class="bg-gradient-orb orb-2-main"></div>
+
+        <div class="dna-container">
+            <div class="dna-strand dna-main-1">
+                <svg viewBox="0 0 60 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 10C20 10 10 30 10 50C10 70 30 80 30 100C30 120 10 130 10 150C10 170 20 190 20 190" stroke="#4F90D4" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M40 10C40 10 50 30 50 50C50 70 30 80 30 100C30 120 50 130 50 150C50 170 40 190 40 190" stroke="#8B7EC9" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="20" cy="20" r="4" fill="#4F90D4"/>
+                    <circle cx="40" cy="20" r="4" fill="#8B7EC9"/>
+                    <circle cx="15" cy="50" r="4" fill="#4F90D4"/>
+                    <circle cx="45" cy="50" r="4" fill="#8B7EC9"/>
+                    <circle cx="30" cy="80" r="4" fill="#00D9FF"/>
+                    <circle cx="30" cy="100" r="4" fill="#00D9FF"/>
+                    <circle cx="30" cy="120" r="4" fill="#00D9FF"/>
+                    <circle cx="15" cy="150" r="4" fill="#4F90D4"/>
+                    <circle cx="45" cy="150" r="4" fill="#8B7EC9"/>
+                    <circle cx="20" cy="180" r="4" fill="#4F90D4"/>
+                    <circle cx="40" cy="180" r="4" fill="#8B7EC9"/>
+                </svg>
+            </div>
+            <div class="dna-strand dna-main-2">
+                <svg viewBox="0 0 60 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 10C20 10 10 30 10 50C10 70 30 80 30 100C30 120 10 130 10 150C10 170 20 190 20 190" stroke="#8B7EC9" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M40 10C40 10 50 30 50 50C50 70 30 80 30 100C30 120 50 130 50 150C50 170 40 190 40 190" stroke="#4F90D4" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="20" cy="20" r="4" fill="#8B7EC9"/>
+                    <circle cx="40" cy="20" r="4" fill="#4F90D4"/>
+                    <circle cx="15" cy="50" r="4" fill="#8B7EC9"/>
+                    <circle cx="45" cy="50" r="4" fill="#4F90D4"/>
+                    <circle cx="30" cy="80" r="4" fill="#00D9FF"/>
+                    <circle cx="30" cy="100" r="4" fill="#00D9FF"/>
+                    <circle cx="30" cy="120" r="4" fill="#00D9FF"/>
+                    <circle cx="15" cy="150" r="4" fill="#8B7EC9"/>
+                    <circle cx="45" cy="150" r="4" fill="#4F90D4"/>
+                    <circle cx="20" cy="180" r="4" fill="#8B7EC9"/>
+                    <circle cx="40" cy="180" r="4" fill="#4F90D4"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="nanoparticle np-1"></div>
+        <div class="nanoparticle np-2"></div>
+        <div class="nanoparticle np-3"></div>
+        <div class="nanoparticle np-4"></div>
+        <div class="nanoparticle np-5"></div>
+    </div>
+
+    <div class="page-wrapper">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="nav-logo">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 4C20 4 8 14 8 24C8 30 14 36 20 36C26 36 32 30 32 24C32 14 20 4 20 4Z" fill="white" fill-opacity="0.9"/>
+                        <path d="M20 12V32M14 18C14 18 17 20 20 20C23 20 26 18 26 18M14 26C14 26 17 24 20 24C23 24 26 26 26 26" stroke="#0A1628" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="20" cy="8" r="3" fill="white"/>
+                    </svg>
+                </div>
+                <span class="nav-title">Digital Twin System</span>
+            </div>
+            <div class="nav-user">
+                <span class="user-name">{{ name or 'User' }}</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <section class="welcome-section">
+                <h1 class="welcome-title">Welcome back, {{ name or 'Researcher' }}</h1>
+                <p class="welcome-subtitle">Explore your personalized mRNA vaccine compatibility dashboard.</p>
+            </section>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <h3 class="card-title">Compatibility Assessment</h3>
+                    <p class="card-text">Run a new AI-driven simulation to evaluate vaccine formulation safety based on patient digital twin data.</p>
+                    <button class="card-btn">Start Assessment</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="3" y1="9" x2="21" y2="9"/>
+                            <line x1="9" y1="21" x2="9" y2="9"/>
+                        </svg>
+                    </div>
+                    <h3 class="card-title">Patient Models</h3>
+                    <p class="card-text">View and manage virtual patient profiles, genetic markers, and historical simulation results.</p>
+                    <button class="card-btn">View Models</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </div>
+                    <h3 class="card-title">Reports</h3>
+                    <p class="card-text">Generate and download detailed safety reports, side-effect predictions, and clinical summaries.</p>
+                    <button class="card-btn">Generate Report</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.67 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.67a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                    </div>
+                    <h3 class="card-title">Settings</h3>
+                    <p class="card-text">Update your profile, manage notification preferences, and configure simulation parameters.</p>
+                    <button class="card-btn">Open Settings</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p class="footer-text">
+                Research Prototype<span class="footer-separator">|</span>Biomedical AI System
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        function logout() {
+            window.location.href = '/logout';
+        }
+
+        // Verify session on load; redirect if not authenticated
+        (async () => {
+            try {
+                const res = await fetch('/check-session');
+                if (!res.ok) {
+                    window.location.href = '/';
+                }
+            } catch (e) {
+                window.location.href = '/';
+            }
+        })();
+    </script>
 </body>
 </html>
+
